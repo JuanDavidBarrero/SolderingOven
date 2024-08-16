@@ -14,7 +14,7 @@
 #define XPT2046_CLK 25
 #define XPT2046_CS 33
 
-Device esp32;
+Device devEsp32;
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 
@@ -56,13 +56,13 @@ void touchscreen_read(lv_indev_t *indev, lv_indev_data_t *data)
   }
 }
 
-
-
 void setup()
 {
   String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
   Serial.begin(115200);
   Serial.println(LVGL_Arduino);
+
+  devEsp32.begin();
 
   lv_init();
 
@@ -82,7 +82,8 @@ void setup()
 
   lv_indev_set_read_cb(indev, touchscreen_read);
 
-  MainGUI gui;
+
+  MainGUI gui(devEsp32);
   gui.createGUI();
 }
 

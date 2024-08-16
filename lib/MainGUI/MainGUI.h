@@ -9,7 +9,7 @@
 class MainGUI
 {
 public:
-    MainGUI();
+    MainGUI(Device& device);
 
     // Función para crear la interfaz principal
     void createGUI();
@@ -22,6 +22,7 @@ public:
 private:
     static int point_index;         // Variable estática para llevar el seguimiento del índice del punto
     static lv_chart_series_t *ser1; // Variable estática para la serie del gráfico
+    static Device *devicePtr;       // Puntero estático al objeto Device
     // Funciones auxiliares para crear partes de la interfaz
     void createTopLeftContainer();
     void createTopRightContainer();
@@ -34,6 +35,9 @@ private:
     static void setButtonEventCallback(lv_event_t *e);
     static void keyboardEventCallback(lv_event_t *e);
     static void add_point_event_handler(lv_event_t *e);
+    static void buttonSaveEventCallback(lv_event_t *e);
+    static void buttonDeleteEventCallback(lv_event_t *e);
+    static void buttonPlayEventCallback(lv_event_t *e);
 };
 
 #endif // MAIN_GUI_H

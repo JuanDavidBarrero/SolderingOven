@@ -2,10 +2,11 @@
 
 int MainGUI::point_index = 0;
 lv_chart_series_t *MainGUI::ser1 = nullptr;
+Device *MainGUI::devicePtr = nullptr;
 
-MainGUI::MainGUI()
+MainGUI::MainGUI(Device &device)
 {
-   
+    devicePtr = &device;
 }
 
 void MainGUI::createGUI()
@@ -140,31 +141,91 @@ void MainGUI::buttonBackEventCallback(lv_event_t *e)
 
 void MainGUI::showLoadScreen()
 {
+
     lv_obj_clean(lv_scr_act());
 
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "Load");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    int rowHeight = 60;
 
-    lv_obj_t *back_button = lv_button_create(lv_scr_act());
-    lv_obj_set_size(back_button, 80, 40);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
+    for (int i = 0; i < 3; ++i)
+    {
 
-    lv_obj_t *back_label = lv_label_create(back_button);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_center(back_label);
+        UserSettings &settings = devicePtr->loadSettingsFromEEPROM(i * sizeof(UserSettings));
 
-    lv_obj_add_event_cb(back_button, buttonBackEventCallback, LV_EVENT_CLICKED, this);
+        lv_obj_t *row = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(row, lv_pct(100), rowHeight);
+        lv_obj_align(row, LV_ALIGN_TOP_MID, 0, i * (rowHeight));
+
+        lv_obj_set_user_data(row, (void *)(intptr_t)i);
+
+        lv_obj_t *dataLabel = lv_label_create(row);
+        char buf[256];
+        sprintf(buf, "Preheat: %d°C Time: %d s \r\n Heat: %d°C Time: %d s",
+                settings.getPreheatTemp(), settings.getTimePreheat(),
+                settings.getSolderTemp(), settings.getTimeSolder());
+        lv_label_set_text(dataLabel, buf);
+        lv_obj_set_style_text_font(dataLabel, &lv_font_montserrat_12, 0);
+        lv_obj_align(dataLabel, LV_ALIGN_LEFT_MID, 0, 0);
+
+        lv_obj_t *saveButton = lv_button_create(row);
+        lv_obj_set_size(saveButton, 30, 30);
+        lv_obj_align(saveButton, LV_ALIGN_RIGHT_MID, -90, 0);
+        lv_obj_set_style_bg_color(saveButton, lv_color_hex(0x0000FF), 0);
+        lv_obj_set_style_radius(saveButton, LV_RADIUS_CIRCLE, 0);
+
+        lv_obj_t *saveIcon = lv_label_create(saveButton);
+        lv_label_set_text(saveIcon, LV_SYMBOL_SAVE);
+        lv_obj_set_style_text_font(saveIcon, &lv_font_montserrat_14, 0);
+        lv_obj_center(saveIcon);
+        lv_obj_add_event_cb(saveButton, buttonSaveEventCallback, LV_EVENT_CLICKED, this);
+
+        lv_obj_t *deleteButton = lv_button_create(row);
+        lv_obj_set_size(deleteButton, 30, 30);
+        lv_obj_align(deleteButton, LV_ALIGN_RIGHT_MID, -50, 0);
+        lv_obj_set_style_bg_color(deleteButton, lv_color_hex(0xFF0000), 0);
+        lv_obj_set_style_radius(deleteButton, LV_RADIUS_CIRCLE, 0);
+
+        lv_obj_t *deleteIcon = lv_label_create(deleteButton);
+        lv_label_set_text(deleteIcon, LV_SYMBOL_TRASH);
+        lv_obj_set_style_text_font(deleteIcon, &lv_font_montserrat_14, 0);
+        lv_obj_center(deleteIcon);
+        lv_obj_add_event_cb(deleteButton, buttonDeleteEventCallback, LV_EVENT_CLICKED, this);
+
+        lv_obj_t *playButton = lv_button_create(row);
+        lv_obj_set_size(playButton, 30, 30);
+        lv_obj_align(playButton, LV_ALIGN_RIGHT_MID, -10, 0);
+        lv_obj_set_style_bg_color(playButton, lv_color_hex(0x00FF00), 0);
+        lv_obj_set_style_radius(playButton, LV_RADIUS_CIRCLE, 0);
+
+        lv_obj_t *playIcon = lv_label_create(playButton);
+        lv_label_set_text(playIcon, LV_SYMBOL_PLAY);
+        lv_obj_set_style_text_font(playIcon, &lv_font_montserrat_14, 0);
+        lv_obj_center(playIcon);
+        lv_obj_add_event_cb(playButton, buttonPlayEventCallback, LV_EVENT_CLICKED, this);
+    }
+
+    lv_obj_t *backButton = lv_button_create(lv_scr_act());
+    lv_obj_set_size(backButton, 60, 30);
+    lv_obj_align(backButton, LV_ALIGN_BOTTOM_RIGHT, -20, -10);
+
+    lv_obj_t *backButtonLabel = lv_label_create(backButton);
+    lv_label_set_text(backButtonLabel, LV_SYMBOL_LEFT);
+    lv_obj_set_style_text_font(backButtonLabel, &lv_font_montserrat_14, 0);
+    lv_obj_center(backButtonLabel);
+
+    lv_obj_add_event_cb(backButton, buttonBackEventCallback, LV_EVENT_CLICKED, this);
 }
 
 void MainGUI::showStartScreen()
 {
     lv_obj_clean(lv_scr_act());
+    UserSettings& settings = devicePtr->getSettings();
 
+    // Título
     lv_obj_t *title_label = lv_label_create(lv_scr_act());
     lv_label_set_text(title_label, "Solder Station Working");
     lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 10);
 
+    // Gráfico
     lv_obj_t *chart = lv_chart_create(lv_scr_act());
     lv_obj_set_size(chart, lv_pct(80), lv_pct(60));
     lv_obj_align(chart, LV_ALIGN_TOP_MID, 20, 40);
@@ -174,7 +235,6 @@ void MainGUI::showStartScreen()
     lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
 
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, 320);
-
     lv_chart_set_point_count(chart, 100);
 
     ser1 = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
@@ -185,24 +245,34 @@ void MainGUI::showStartScreen()
     lv_scale_set_label_show(scale, true);
 
     lv_scale_set_range(scale, 0, 320);
-
     lv_scale_set_total_tick_count(scale, 5);
-
     lv_scale_set_major_tick_every(scale, 1);
 
     lv_obj_set_style_length(scale, 5, LV_PART_INDICATOR);
     lv_obj_align_to(scale, chart, LV_ALIGN_OUT_LEFT_MID, -20, 0);
 
+    // Botón "Add"
     lv_obj_t *add_point_button = lv_btn_create(lv_scr_act());
-    lv_obj_set_size(add_point_button, 100, 30);
+    lv_obj_set_size(add_point_button, 30, 30);
     lv_obj_align(add_point_button, LV_ALIGN_BOTTOM_LEFT, 25, -10);
 
     lv_obj_t *add_point_label = lv_label_create(add_point_button);
-    lv_label_set_text(add_point_label, "Add Point");
+    lv_label_set_text(add_point_label, "Add");
     lv_obj_center(add_point_label);
 
     lv_obj_add_event_cb(add_point_button, add_point_event_handler, LV_EVENT_CLICKED, chart);
 
+    // Etiqueta para mostrar los datos de UserSettings
+    lv_obj_t *data_label = lv_label_create(lv_scr_act());
+    char buf[256];
+    sprintf(buf, "Preheat Temp: %d°C\nPreheat Time: %d s\nSolder Temp: %d°C\nSolder Time: %d s",
+            settings.getPreheatTemp(), settings.getTimePreheat(),
+            settings.getSolderTemp(), settings.getTimeSolder());
+    lv_label_set_text(data_label, buf);
+    lv_obj_set_style_text_font(data_label, &lv_font_montserrat_12, 0); // Fuente más pequeña
+    lv_obj_align(data_label, LV_ALIGN_BOTTOM_MID, 0, -50); // Ajusta la posición entre los botones
+
+    // Botón "Back"
     lv_obj_t *back_button = lv_btn_create(lv_scr_act());
     lv_obj_set_size(back_button, 60, 30);
     lv_obj_align(back_button, LV_ALIGN_BOTTOM_RIGHT, -25, -10);
@@ -213,6 +283,7 @@ void MainGUI::showStartScreen()
 
     lv_obj_add_event_cb(back_button, buttonBackEventCallback, LV_EVENT_CLICKED, this);
 }
+
 
 void MainGUI::add_point_event_handler(lv_event_t *e)
 {
@@ -344,14 +415,66 @@ void MainGUI::setButtonEventCallback(lv_event_t *e)
     const char *solder_temp = lv_textarea_get_text(solder_temp_area);
     const char *solder_time = lv_textarea_get_text(solder_time_area);
 
+    UserSettings &settings = devicePtr->getSettings();
 
-    Serial.println("Valores de los campos de texto:");
+    settings.setPreheatTemp(atoi(preheat_temp));
+    settings.setTimePreheat(atoi(preheat_time));
+    settings.setSolderTemp(atoi(solder_temp));
+    settings.setTimeSolder(atoi(solder_time));
+}
+
+void MainGUI::buttonSaveEventCallback(lv_event_t *e)
+{
+
+    lv_obj_t *obj = (lv_obj_t *)lv_event_get_target(e);
+
+    lv_obj_t *row = lv_obj_get_parent(obj);
+    int rowIndex = (int)(intptr_t)lv_obj_get_user_data(row);
+
+    devicePtr->saveSettingsToEEPROM(rowIndex * sizeof(UserSettings));
+
+    Serial.print("Save icon clicked on row ");
+    Serial.println(rowIndex);
+}
+
+void MainGUI::buttonDeleteEventCallback(lv_event_t *e)
+{
+
+    lv_obj_t *obj = (lv_obj_t *)lv_event_get_target(e);
+
+    lv_obj_t *row = lv_obj_get_parent(obj);
+    int rowIndex = (int)(intptr_t)lv_obj_get_user_data(row);
+
+    devicePtr->deleteSettings(rowIndex * sizeof(UserSettings));
+
+    Serial.print("Delete icon clicked on row ");
+    Serial.println(rowIndex);
+}
+
+void MainGUI::buttonPlayEventCallback(lv_event_t *e)
+{
+
+    lv_obj_t *obj = (lv_obj_t *)lv_event_get_target(e);
+
+    lv_obj_t *row = lv_obj_get_parent(obj);
+    int rowIndex = (int)(intptr_t)lv_obj_get_user_data(row);
+
+    UserSettings &data = devicePtr->loadSettingsFromEEPROM(rowIndex * sizeof(UserSettings));
+
+    UserSettings &settings = devicePtr->getSettings();
+    settings.setPreheatTemp(data.getPreheatTemp());
+    settings.setTimePreheat(data.getTimePreheat());
+    settings.setSolderTemp(data.getSolderTemp());
+    settings.setTimeSolder(data.getTimeSolder());
+
+    Serial.print("\n\nCurrent Settings play button:\n");
     Serial.print("Preheat Temp: ");
-    Serial.println(preheat_temp);
-    Serial.print("Preheat Time: ");
-    Serial.println(preheat_time);
-    Serial.print("Solder Temp: ");
-    Serial.println(solder_temp);
-    Serial.print("Solder Time: ");
-    Serial.println(solder_time);
+    Serial.print(settings.getPreheatTemp());
+    Serial.print("°C\nTime Preheat: ");
+    Serial.print(settings.getTimePreheat());
+    Serial.print(" s\nSolder Temp: ");
+    Serial.print(settings.getSolderTemp());
+    Serial.print("°C\nTime Solder: ");
+    Serial.print(settings.getTimeSolder());
+    Serial.println(" s");
 }
