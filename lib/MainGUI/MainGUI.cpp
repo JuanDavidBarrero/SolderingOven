@@ -134,6 +134,7 @@ void MainGUI::buttonBackEventCallback(lv_event_t *e)
         return;
     }
 
+    devicePtr->setStart(false);
     lv_obj_clean(lv_scr_act());
 
     gui->createGUI();
@@ -144,7 +145,7 @@ void MainGUI::showLoadScreen()
 
     lv_obj_clean(lv_scr_act());
 
-    int rowHeight = 60;
+    int rowHeight = 65;
 
     for (int i = 0; i < 3; ++i)
     {
@@ -159,7 +160,7 @@ void MainGUI::showLoadScreen()
 
         lv_obj_t *dataLabel = lv_label_create(row);
         char buf[256];
-        sprintf(buf, "Preheat: %d°C Time: %d s \r\n Heat: %d°C Time: %d s",
+        sprintf(buf, "Preheat: %d°C Time: %d min \r\n Heat: %d°C Time: %d min",
                 settings.getPreheatTemp(), settings.getTimePreheat(),
                 settings.getSolderTemp(), settings.getTimeSolder());
         lv_label_set_text(dataLabel, buf);
@@ -167,10 +168,9 @@ void MainGUI::showLoadScreen()
         lv_obj_align(dataLabel, LV_ALIGN_LEFT_MID, 0, 0);
 
         lv_obj_t *saveButton = lv_button_create(row);
-        lv_obj_set_size(saveButton, 30, 30);
+        lv_obj_set_size(saveButton, 35, 35);
         lv_obj_align(saveButton, LV_ALIGN_RIGHT_MID, -90, 0);
         lv_obj_set_style_bg_color(saveButton, lv_color_hex(0x0000FF), 0);
-        lv_obj_set_style_radius(saveButton, LV_RADIUS_CIRCLE, 0);
 
         lv_obj_t *saveIcon = lv_label_create(saveButton);
         lv_label_set_text(saveIcon, LV_SYMBOL_SAVE);
@@ -179,10 +179,9 @@ void MainGUI::showLoadScreen()
         lv_obj_add_event_cb(saveButton, buttonSaveEventCallback, LV_EVENT_CLICKED, this);
 
         lv_obj_t *deleteButton = lv_button_create(row);
-        lv_obj_set_size(deleteButton, 30, 30);
+        lv_obj_set_size(deleteButton, 35, 35);
         lv_obj_align(deleteButton, LV_ALIGN_RIGHT_MID, -50, 0);
         lv_obj_set_style_bg_color(deleteButton, lv_color_hex(0xFF0000), 0);
-        lv_obj_set_style_radius(deleteButton, LV_RADIUS_CIRCLE, 0);
 
         lv_obj_t *deleteIcon = lv_label_create(deleteButton);
         lv_label_set_text(deleteIcon, LV_SYMBOL_TRASH);
@@ -191,10 +190,9 @@ void MainGUI::showLoadScreen()
         lv_obj_add_event_cb(deleteButton, buttonDeleteEventCallback, LV_EVENT_CLICKED, this);
 
         lv_obj_t *playButton = lv_button_create(row);
-        lv_obj_set_size(playButton, 30, 30);
+        lv_obj_set_size(playButton, 35, 35);
         lv_obj_align(playButton, LV_ALIGN_RIGHT_MID, -10, 0);
         lv_obj_set_style_bg_color(playButton, lv_color_hex(0x00FF00), 0);
-        lv_obj_set_style_radius(playButton, LV_RADIUS_CIRCLE, 0);
 
         lv_obj_t *playIcon = lv_label_create(playButton);
         lv_label_set_text(playIcon, LV_SYMBOL_PLAY);
@@ -218,7 +216,7 @@ void MainGUI::showLoadScreen()
 void MainGUI::showStartScreen()
 {
     lv_obj_clean(lv_scr_act());
-    UserSettings& settings = devicePtr->getSettings();
+    UserSettings &settings = devicePtr->getSettings();
 
     // Título
     lv_obj_t *title_label = lv_label_create(lv_scr_act());
@@ -233,6 +231,7 @@ void MainGUI::showStartScreen()
     lv_obj_set_style_border_color(chart, lv_color_black(), 0);
     lv_obj_set_style_border_width(chart, 2, 0);
     lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
+    lv_obj_set_style_size(chart, 0, 0, LV_PART_INDICATOR);
 
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, 320);
     lv_chart_set_point_count(chart, 100);
@@ -251,59 +250,30 @@ void MainGUI::showStartScreen()
     lv_obj_set_style_length(scale, 5, LV_PART_INDICATOR);
     lv_obj_align_to(scale, chart, LV_ALIGN_OUT_LEFT_MID, -20, 0);
 
-    // Botón "Add"
-    lv_obj_t *add_point_button = lv_btn_create(lv_scr_act());
-    lv_obj_set_size(add_point_button, 30, 30);
-    lv_obj_align(add_point_button, LV_ALIGN_BOTTOM_LEFT, 25, -10);
-
-    lv_obj_t *add_point_label = lv_label_create(add_point_button);
-    lv_label_set_text(add_point_label, "Add");
-    lv_obj_center(add_point_label);
-
-    lv_obj_add_event_cb(add_point_button, add_point_event_handler, LV_EVENT_CLICKED, chart);
-
     // Etiqueta para mostrar los datos de UserSettings
     lv_obj_t *data_label = lv_label_create(lv_scr_act());
     char buf[256];
-    sprintf(buf, "Preheat Temp: %d°C\nPreheat Time: %d s\nSolder Temp: %d°C\nSolder Time: %d s",
-            settings.getPreheatTemp(), settings.getTimePreheat(),
-            settings.getSolderTemp(), settings.getTimeSolder());
+    sprintf(buf,
+            "Temp pre: %d°C    Temp sol: %d°C\n"
+            "Time:      %d min      Time:      %d min",
+            settings.getPreheatTemp(), settings.getSolderTemp(),
+            settings.getTimePreheat(), settings.getTimeSolder());
     lv_label_set_text(data_label, buf);
     lv_obj_set_style_text_font(data_label, &lv_font_montserrat_12, 0); // Fuente más pequeña
-    lv_obj_align(data_label, LV_ALIGN_BOTTOM_MID, 0, -50); // Ajusta la posición entre los botones
+    lv_obj_align(data_label, LV_ALIGN_BOTTOM_LEFT, 10, -10);           // Ajusta la posición entre los botones
 
     // Botón "Back"
     lv_obj_t *back_button = lv_btn_create(lv_scr_act());
     lv_obj_set_size(back_button, 60, 30);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_RIGHT, -25, -10);
+    lv_obj_align(back_button, LV_ALIGN_BOTTOM_RIGHT, -15, -10);
 
     lv_obj_t *back_label = lv_label_create(back_button);
     lv_label_set_text(back_label, "Back");
     lv_obj_center(back_label);
 
+    devicePtr->setChart(chart, ser1);
+
     lv_obj_add_event_cb(back_button, buttonBackEventCallback, LV_EVENT_CLICKED, this);
-}
-
-
-void MainGUI::add_point_event_handler(lv_event_t *e)
-{
-    lv_obj_t *chart = (lv_obj_t *)lv_event_get_user_data(e);
-
-    if (ser1 == nullptr)
-        return;
-
-    int value = point_index * 10;
-    if (value > 320)
-    {
-        value = 320;
-    }
-    lv_chart_set_next_value(chart, ser1, value);
-
-    point_index++;
-    if (point_index >= 100)
-    {
-        point_index = 0;
-    }
 }
 
 void MainGUI::showConfigScreen()

@@ -14,6 +14,9 @@
 #define XPT2046_CLK 25
 #define XPT2046_CS 33
 
+unsigned long previousMillis = 0; // Almacena el último tiempo en el que se añadió un valor
+const unsigned long interval = 5000; // Intervalo de 5 segundos
+
 Device devEsp32;
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
@@ -82,7 +85,6 @@ void setup()
 
   lv_indev_set_read_cb(indev, touchscreen_read);
 
-
   MainGUI gui(devEsp32);
   gui.createGUI();
 }
@@ -92,4 +94,12 @@ void loop()
   lv_task_handler();
   lv_tick_inc(5);
   delay(5);
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval)
+  {
+    previousMillis = currentMillis;
+
+    devEsp32.addDatachar();
+  }
 }

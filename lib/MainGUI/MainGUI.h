@@ -34,7 +34,6 @@ private:
     static void textAreaEventCallback(lv_event_t *e);
     static void setButtonEventCallback(lv_event_t *e);
     static void keyboardEventCallback(lv_event_t *e);
-    static void add_point_event_handler(lv_event_t *e);
     static void buttonSaveEventCallback(lv_event_t *e);
     static void buttonDeleteEventCallback(lv_event_t *e);
     static void buttonPlayEventCallback(lv_event_t *e);

@@ -1,6 +1,6 @@
 #include "Device.h"
 
-Device::Device()
+Device::Device():start(false)
 {
 }
 
@@ -8,7 +8,38 @@ void Device::PID()
 {
 }
 
-void Device::begin() {
+void Device::setChart(lv_obj_t *c, lv_chart_series_t *s)
+{
+    chart = c;
+    ser1 = s;
+    start = true;
+}
+
+void Device::addDatachar()
+{
+
+    if (!start)
+    {
+        return;
+    }
+
+    if (chart == nullptr || ser1 == nullptr)
+    {
+        return;
+    }
+
+    int randomValue = rand() % 320;
+
+    lv_chart_set_next_value(chart, ser1, randomValue);
+}
+
+void Device::setStart(bool s)
+{
+    start = s;
+}
+
+void Device::begin()
+{
     EEPROM.begin(1024);
 }
 
@@ -44,7 +75,6 @@ void Device::deleteSettings(int startAddress)
         return;
     }
 
-    // Reemplaza los datos con 0
     for (int i = 0; i < size; ++i)
     {
         EEPROM.write(startAddress + i, 0);
@@ -53,20 +83,18 @@ void Device::deleteSettings(int startAddress)
     EEPROM.commit();
 }
 
-
-UserSettings& Device::loadSettingsFromEEPROM(int startAddress)
+UserSettings &Device::loadSettingsFromEEPROM(int startAddress)
 {
     int size = sizeof(UserSettings);
     if (startAddress + size > EEPROM.length())
     {
         Serial.println("Error: EEPROM read overflow.");
-        return settings;  // Devuelve una referencia a settings, aunque no esté correctamente cargada
+        return settings;
     }
 
-    // Lee directamente desde EEPROM a settings usando memcpy
     EEPROM.get(startAddress, data);
 
-    return data;  // Devuelve la referencia a settings cargado desde EEPROM
+    return data;
 }
 
 void Device::printFirst100EEPROM()
