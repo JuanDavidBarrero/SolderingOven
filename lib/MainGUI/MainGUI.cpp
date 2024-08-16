@@ -1,7 +1,11 @@
 #include "MainGUI.h"
 
+int MainGUI::point_index = 0;
+lv_chart_series_t *MainGUI::ser1 = nullptr;
+
 MainGUI::MainGUI()
 {
+   
 }
 
 void MainGUI::createGUI()
@@ -153,9 +157,6 @@ void MainGUI::showLoadScreen()
     lv_obj_add_event_cb(back_button, buttonBackEventCallback, LV_EVENT_CLICKED, this);
 }
 
-int MainGUI::point_index = 0;
-lv_chart_series_t *MainGUI::ser1 = nullptr;
-
 void MainGUI::showStartScreen()
 {
     lv_obj_clean(lv_scr_act());
@@ -233,6 +234,7 @@ void MainGUI::add_point_event_handler(lv_event_t *e)
         point_index = 0;
     }
 }
+
 void MainGUI::showConfigScreen()
 {
     lv_obj_clean(lv_scr_act());
@@ -341,6 +343,7 @@ void MainGUI::setButtonEventCallback(lv_event_t *e)
     const char *preheat_time = lv_textarea_get_text(preheat_time_area);
     const char *solder_temp = lv_textarea_get_text(solder_temp_area);
     const char *solder_time = lv_textarea_get_text(solder_time_area);
+
 
     Serial.println("Valores de los campos de texto:");
     Serial.print("Preheat Temp: ");

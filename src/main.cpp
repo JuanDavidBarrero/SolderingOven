@@ -5,6 +5,7 @@
 
 #include <XPT2046_Touchscreen.h>
 
+#include "Device.h"
 #include "MainGUI.h"
 
 #define XPT2046_IRQ 36
@@ -13,6 +14,7 @@
 #define XPT2046_CLK 25
 #define XPT2046_CS 33
 
+Device esp32;
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 

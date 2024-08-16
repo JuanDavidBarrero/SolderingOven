@@ -1,8 +1,10 @@
 #ifndef MAIN_GUI_H
 #define MAIN_GUI_H
 
-#include <lvgl.h>
 #include "Arduino.h"
+#include <lvgl.h>
+#include "Settings.h"
+#include "Device.h"
 
 class MainGUI
 {
