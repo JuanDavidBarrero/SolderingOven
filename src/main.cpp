@@ -1,9 +1,8 @@
 
 #include <lvgl.h>
-
 #include <TFT_eSPI.h>
-
 #include <XPT2046_Touchscreen.h>
+#include "max6675.h"
 
 #include "Device.h"
 #include "MainGUI.h"
@@ -14,12 +13,17 @@
 #define XPT2046_CLK 25
 #define XPT2046_CS 33
 
-unsigned long previousMillis = 0; // Almacena el último tiempo en el que se añadió un valor
-const unsigned long interval = 5000; // Intervalo de 5 segundos
+int thermoDO = 4;
+int thermoCS = 18;
+int thermoCLK = 22;
+
+unsigned long previousMillis = 0;    // Almacena el último tiempo en el que se añadió un valor
+const unsigned long interval = 2000; // Intervalo de 5 segundos
 
 Device devEsp32;
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
+MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -101,5 +105,8 @@ void loop()
     previousMillis = currentMillis;
 
     devEsp32.addDatachar();
+
+    Serial.print("C = ");
+    Serial.println(thermocouple.readCelsius());
   }
 }
