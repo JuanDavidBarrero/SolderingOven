@@ -1,6 +1,6 @@
 #include "Device.h"
 
-Device::Device():start(false)
+Device::Device() : start(false), thermoDO(4), thermoCS(18), thermoCLK(22), thermocouple(thermoCLK, thermoCS, thermoDO)
 {
 }
 
@@ -28,9 +28,7 @@ void Device::addDatachar()
         return;
     }
 
-    int randomValue = rand() % 320;
-
-    lv_chart_set_next_value(chart, ser1, randomValue);
+    lv_chart_set_next_value(chart, ser1, readTemperature());
 }
 
 void Device::setStart(bool s)
@@ -124,4 +122,9 @@ void Device::clearFirst100EEPROM()
     }
     EEPROM.commit();
     Serial.println("Primera 100 bytes borrados.");
+}
+
+float Device::readTemperature() {
+    // Serial.println(thermocouple.readCelsius());
+    return thermocouple.readCelsius();
 }

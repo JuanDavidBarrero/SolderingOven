@@ -4,6 +4,7 @@
 #include "UserSettings.h"
 #include <lvgl.h>
 #include <EEPROM.h>
+#include "max6675.h"  // Include the MAX6675 library
 
 class Device
 {
@@ -14,6 +15,12 @@ private:
     lv_chart_series_t *ser1;
     bool start;
 
+    // MAX6675 Thermocouple pins
+    int thermoDO;
+    int thermoCS;
+    int thermoCLK;
+    MAX6675 thermocouple;
+
 public:
     // Constructor vacío
     Device();
@@ -21,7 +28,7 @@ public:
     // Función PID (sin implementación por ahora)
     void PID();
 
-    void setChart(lv_obj_t *c,  lv_chart_series_t *s);
+    void setChart(lv_obj_t *c, lv_chart_series_t *s);
 
     void addDatachar();
 
@@ -46,6 +53,9 @@ public:
 
     // Método para inicializar EEPROM
     void begin();
+
+    // Método para leer la temperatura del termopar
+    float readTemperature();
 };
 
 #endif // DEVICE_H
