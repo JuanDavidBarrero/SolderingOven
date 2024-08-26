@@ -8,7 +8,7 @@ A continuación se detallan las conexiones entre el TFT LCD touchscreen y el ESP
 | **T_OUT**          | GPIO 39        |
 | **T_DIN**          | GPIO 32        |
 | **T_CS**           | GPIO 33        |
-| **T_CLT_CLK**      | GPIO 25        |
+| **T_CLK**      | GPIO 25        |
 | **SDO (MISO)**     | GPIO 12        |
 | **LED**            | GPIO 21        |
 | **SCK**            | GPIO 14        |
