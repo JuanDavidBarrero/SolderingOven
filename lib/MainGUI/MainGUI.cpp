@@ -398,7 +398,7 @@ void MainGUI::buttonSaveEventCallback(lv_event_t *e)
 
     lv_obj_t *obj = (lv_obj_t *)lv_event_get_target(e);
 
-    lv_obj_t *row = lv_obj_get_parent(obj);
+    lv_obj_t *row = lv_obj_get_parent(obj); 
     int rowIndex = (int)(intptr_t)lv_obj_get_user_data(row);
 
     devicePtr->saveSettingsToEEPROM(rowIndex * sizeof(UserSettings));
